@@ -16,6 +16,8 @@ debug('core:server');
 
 // Added dependencies
 import WebSocket from 'ws';
+import ClientManager from '../modules/ClientManager.mjs';
+import * as uuid from 'uuid';
 // const WebSocket = require('ws');
 // const url = require('url');
 
@@ -47,12 +49,22 @@ server.on('listening', onListening);
 
 // https://github.com/websockets/ws#multiple-servers-sharing-a-single-https-server
 const wss = new WebSocket.Server({ noServer: true })
-wss.on('connection', ws => {
+const cm = new ClientManager(wss);
+
+const CLIENTS = [];
+
+wss.on('connection', (ws, request, client) => {
   ws.on('message', message => {
-    console.log(`Received: ${message}`);
+    console.log(`Received message ${message} from user ${client}`);
     ws.send(`SERVER: Echoing your message: "${message}"`)
+
+    for (let socket of CLIENTS) {
+      socket.send(`BROADCASTING MESSAGE: ${message}`)
+    }
+
   })
 
+  CLIENTS.push(ws);
   // A message sent immediately on connection
   ws.send('SERVER: Hi. You have connected to the server.');
 })

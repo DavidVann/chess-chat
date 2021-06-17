@@ -1,4 +1,8 @@
 extends layout
 
 block scripts
-    script(defer, src="/javascripts/client.js")
+    script(defer, type="module", src="/javascripts/gameClient.mjs")
+
+block content
+    input(class="message-input")
+    button(class="message-send")="Send message"
