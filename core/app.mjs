@@ -1,14 +1,27 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+// let createError = require('http-errors');
+// let express = require('express');
+// let path = require('path');
+// let cookieParser = require('cookie-parser');
+// let logger = require('morgan');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-let gameRouter = require('./routes/game');
+import createError from 'http-errors';
+import express from 'express';
+import path from 'path';
+import cookieParser from 'cookie-parser';
+import logger from 'morgan';
 
-var app = express();
+// let indexRouter = require('./routes/index');
+// let usersRouter = require('./routes/users');
+// let gameRouter = require('./routes/game');
+
+import indexRouter from './routes/index.mjs';
+import usersRouter from './routes/users.mjs';
+import gameRouter from './routes/game.mjs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+let app = express();
 
 // view engine setup
 // app.set() has special values that correspond to specific settings (https://expressjs.com/en/5x/api.html#app.settings.table)
@@ -41,4 +54,4 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-module.exports = app;
+export default app;
