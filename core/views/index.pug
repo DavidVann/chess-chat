@@ -1,5 +1,9 @@
 extends layout
 
+block scripts
+  script(defer, type="module", src="/javascripts/main.mjs")
+
 block content
   h1= title
   p Welcome to #{title}
+  a(href="/game") Game

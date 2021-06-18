@@ -51,20 +51,28 @@ server.on('listening', onListening);
 const wss = new WebSocket.Server({ noServer: true })
 const cm = new ClientManager(wss);
 
-const CLIENTS = [];
+const GAMES = {};
 
-wss.on('connection', (ws, request, client) => {
+const getRoom = req => {
+  return (req.url.substr(1))
+};
+
+wss.on('connection', (ws, request) => {
+  let room = request.url.substr(1);
+  if (!GAMES[room]) {
+    GAMES[room] = []
+  }
+  GAMES[room].push(ws);
+
   ws.on('message', message => {
-    console.log(`Received message ${message} from user ${client}`);
-    ws.send(`SERVER: Echoing your message: "${message}"`)
+    let room = request.url.substr(1);
+    let clients = GAMES[room];
 
-    for (let socket of CLIENTS) {
-      socket.send(`BROADCASTING MESSAGE: ${message}`)
+    for (let client of clients) {
+      client.send(message)
     }
-
   })
-
-  CLIENTS.push(ws);
+  
   // A message sent immediately on connection
   ws.send('SERVER: Hi. You have connected to the server.');
 })
