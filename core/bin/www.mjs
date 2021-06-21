@@ -16,7 +16,7 @@ debug('core:server');
 
 // Added dependencies
 import WebSocket from 'ws';
-import ClientManager from '../modules/ClientManager.mjs';
+import GameServer from '../modules/GameServer.mjs';
 import * as uuid from 'uuid';
 // const WebSocket = require('ws');
 // const url = require('url');
@@ -48,40 +48,8 @@ server.on('listening', onListening);
 
 
 // https://github.com/websockets/ws#multiple-servers-sharing-a-single-https-server
-const wss = new WebSocket.Server({ noServer: true })
-const cm = new ClientManager(wss);
-
-const GAMES = {};
-
-const getRoom = req => {
-  return (req.url.substr(1))
-};
-
-wss.on('connection', (ws, request) => {
-  let room = request.url.substr(1);
-  if (!GAMES[room]) {
-    GAMES[room] = []
-  }
-  GAMES[room].push(ws);
-
-  ws.on('message', message => {
-    let room = request.url.substr(1);
-    let clients = GAMES[room];
-
-    for (let client of clients) {
-      client.send(message)
-    }
-  })
-  
-  // A message sent immediately on connection
-  ws.send('SERVER: Hi. You have connected to the server.');
-})
-
-server.on('upgrade', (request, socket, head) => {
-  wss.handleUpgrade(request, socket, head, ws => {
-    wss.emit('connection', ws, request);
-  });
-})
+const gameServer = new GameServer();
+gameServer.attachServer(server);
 
 /**
  * Normalize a port into a number, string, or false.
