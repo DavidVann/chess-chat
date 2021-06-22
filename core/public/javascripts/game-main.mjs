@@ -9,5 +9,5 @@ const messageInput = document.querySelector('.message-input');
 const messageSender = document.querySelector('.message-send');
 
 messageSender.addEventListener('click', () => {
-    client.send(messageInput.value);
+    client.sendChat(messageInput.value);
 })

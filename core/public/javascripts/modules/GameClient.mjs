@@ -1,22 +1,41 @@
 import Chess from './Chess.mjs';
 
-const chatBox = document.getElementById('chat-box')
+const chatBox = document.getElementById('chat-box');
+const chatDisplay = document.getElementById('receive-area');
+
+
+const hideNameInput = () => {
+    let nameInputBox = document.getElementById('name-input-box');
+    nameInputBox.style.display = "none";
+}
+
+const showNameInput = () => {
+    let nameInputBox = document.getElementById('name-input-box');
+    let nameInput = document.getElementById('name-input');
+    let nameSave = document.getElementById('name-submit');
+    nameSave.addEventListener('click', () => {
+        localStorage.setItem('name', nameInput.value);
+        hideNameInput();
+    })
+    nameInputBox.style.display = "block";
+}
+
+showNameInput();
 
 class GameClient {
     constructor(origin, room) {
         let roomURL = `${origin}/${room}`
-        console.log(roomURL);
         this.ws = new WebSocket(roomURL);
         this.ws.onopen = () => {this.handleOpen()};
         this.ws.onerror = (error) => {this.handleError(error)};
         this.ws.onmessage = (e) => {this.handleMessage(e)};
 
         this.room = room;
-
+        this.name = null;
     }
     
     handleOpen() {
-        this.sendChat('CLIENT: Connection Open')
+        this.sendChat('Connection Open')
     }
 
     handleError(error) {
@@ -34,8 +53,9 @@ class GameClient {
     displayChatMessage(packet) {
         console.log(packet.message);
         let newMessage = document.createElement('p');
+        newMessage.classList.add('message')
         newMessage.textContent = packet.message;
-        chatBox.append(newMessage);
+        chatDisplay.append(newMessage);
     }
 
     sendChat(message) {
@@ -57,6 +77,25 @@ class GameClient {
             "timestamp": new Date()
         }
     }
+
+    getName() {
+        let storedName = localStorage.getItem('name');
+        if (storedName) {
+            this.name = storedName;
+        } else {
+
+        }
+    }
+}
+
+class Chat {
+    constructor() {
+        this.name = null;
+    }
+}
+
+class Game {
+
 }
 
 export default GameClient;

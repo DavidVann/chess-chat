@@ -8,7 +8,15 @@ block scripts
 
 block sidebar
     #chat-box
-        input(class="message-input")
-        button(class="message-send")="Send"
+        #receive-area
+        #send-area
+            input(class="message-input")
+            button(class="message-send")="Send"
 
 block content
+
+block extra
+    #name-input-box 
+        h2 Please enter your name:
+        input(id="name-input")
+        button(id="name-submit") Submit
