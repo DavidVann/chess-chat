@@ -1,0 +1,31 @@
+header {
+    grid-area: header;
+}
+
+nav {
+    grid-area: nav;
+}
+
+section {
+    grid-area: sidebar;
+}
+
+main {
+    grid-area: main;
+}
+
+footer {
+    grid-area: footer;
+}
+
+@media screen and (min-width: 768px) {
+    #container {
+        display:grid;
+        grid-template-areas:
+            "header header"
+            "nav nav"
+            "sidebar main"
+            "footer footer";
+        grid-template-columns: 1fr 4fr;
+    }
+}

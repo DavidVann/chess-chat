@@ -2,7 +2,22 @@ doctype html
 html
   head
     title= title
-    link(rel='stylesheet', href='/stylesheets/style.css')
+    block styles
+      link(rel='stylesheet', href='/stylesheets/normalize.css')
+      link(rel='stylesheet', href='/stylesheets/layouts/grid.css')
+      link(rel='stylesheet', href='/stylesheets/themes/light.css')
     block scripts
+  
   body
-    block content
+    #container
+      header
+        block header
+      nav
+        block nav
+          a(href="/game") New Game
+      section
+        block sidebar
+      main
+        block content
+      footer
+        block footer

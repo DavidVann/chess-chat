@@ -1,16 +1,6 @@
-// class GameClient {
-//     constructor(WebSocketClient) {
-//         this.ws = WebSocketClient;
-//     }
+import Chess from './Chess.mjs';
 
-//     connect() {
-
-//     }
-
-//     send(message) {
-//         this.ws.send(message);
-//     }
-// }
+const chatBox = document.getElementById('chat-box')
 
 class GameClient {
     constructor(origin, room) {
@@ -26,7 +16,7 @@ class GameClient {
     }
     
     handleOpen() {
-        this.send('CLIENT: Connection Open')
+        this.sendChat('CLIENT: Connection Open')
     }
 
     handleError(error) {
@@ -35,28 +25,37 @@ class GameClient {
 
     handleMessage(e) {
         let packet = JSON.parse(e.data);
-        let message = packet.message;
-        console.log(message);
-        // console.debug("CLIENT: WebSocket message received:", e);
-        // console.log(e);
-    
-        let p = document.createElement('p');
-        p.textContent = message;
-        document.body.append(p);
-    }
-
-    _displayMessage(message) {
+        if (packet.type === "chat") {
+            this.displayChatMessage(packet)
+        }
 
     }
 
-    send(message) {
+    displayChatMessage(packet) {
+        console.log(packet.message);
+        let newMessage = document.createElement('p');
+        newMessage.textContent = packet.message;
+        chatBox.append(newMessage);
+    }
+
+    sendChat(message) {
         let packet = {
+            "type": "chat",
             "room": this.room,
             "message": message,
             "timestamp": new Date()
         };
 
         this.ws.send(JSON.stringify(packet));
+    }
+
+    sendState(message) {
+        let packet = {
+            "type": "state",
+            "room": this.room,
+            "message": message,
+            "timestamp": new Date()
+        }
     }
 }
 

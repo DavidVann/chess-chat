@@ -1,8 +1,14 @@
 extends layout
 
+block append styles
+    link(rel='stylesheet', href='/stylesheets/modules/chat.css')
+
 block scripts
     script(defer, type="module", src="/javascripts/game-main.mjs")
 
+block sidebar
+    #chat-box
+        input(class="message-input")
+        button(class="message-send")="Send"
+
 block content
-    input(class="message-input")
-    button(class="message-send")="Send message"
