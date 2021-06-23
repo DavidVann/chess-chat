@@ -6,3 +6,13 @@ body {
 a {
     color: #00B7FF;
 }
+
+button {
+    background-color: #00B7FF;
+}
+
+:disabled {
+    background-color: transparent;
+    border-color: whitesmoke;
+    /* color: whitesmoke; */
+}

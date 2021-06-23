@@ -14,13 +14,14 @@ const showNameInput = () => {
     let nameInput = document.getElementById('name-input');
     let nameSave = document.getElementById('name-submit');
     nameSave.addEventListener('click', () => {
-        localStorage.setItem('name', nameInput.value);
-        hideNameInput();
+        let name = nameInput.value;
+        if (name != "") {
+            localStorage.setItem('name', nameInput.value);
+            hideNameInput();
+        }
     })
     nameInputBox.style.display = "block";
 }
-
-showNameInput();
 
 class GameClient {
     constructor(origin, room) {
@@ -32,6 +33,8 @@ class GameClient {
 
         this.room = room;
         this.name = null;
+
+        this.getName();
     }
     
     handleOpen() {
@@ -83,19 +86,9 @@ class GameClient {
         if (storedName) {
             this.name = storedName;
         } else {
-
+            showNameInput()
         }
     }
-}
-
-class Chat {
-    constructor() {
-        this.name = null;
-    }
-}
-
-class Game {
-
 }
 
 export default GameClient;
