@@ -32,7 +32,7 @@ class GameClient {
         this.ws.onmessage = (e) => {this.handleMessage(e)};
 
         this.room = room;
-        this.name = null;
+        // this.name = null;
 
         this.getName();
     }
@@ -49,6 +49,16 @@ class GameClient {
         let packet = JSON.parse(e.data);
         if (packet.type === "chat") {
             this.displayChatMessage(packet)
+        }
+
+        else if (packet.type === "history") {
+            for (let messagePacket of packet.message) {
+                this.displayChatMessage(JSON.parse(messagePacket));
+            }
+        }
+
+        else if (packet.type === "state") {
+
         }
 
     }

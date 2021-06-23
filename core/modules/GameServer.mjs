@@ -1,4 +1,5 @@
 import WebSocket from 'ws';
+import redis from 'redis';
 
 class GameServer {
     constructor() {
@@ -11,7 +12,10 @@ class GameServer {
             })
         });
 
-        this.games = {}; // Object for storing game rooms
+        // this.games = {}; // Object for storing game rooms
+        this.publisher = redis.createClient();
+        this.connection = redis.createClient();
+        this.subscribers = [];
 
     }
 
@@ -24,25 +28,47 @@ class GameServer {
     }
 
     handleConnection(ws, request) {
+        /**
+         * Sends client message history and subscribes client to room updates.
+         */
+
         let room = this.getRoom(request);
-        if (!this.games[room]) {
-            this.games[room] = [];
-        }
-        this.games[room].push(ws);
+
+        // Get message history and send to client
+        this.connection.lrange(`room:${room}`, 0, -1, (err, reply) => {
+            let packet = {
+                "type": "history",
+                "message": reply
+            }
+            console.log(packet);
+
+            ws.send(JSON.stringify(packet));
+        });
+
+        // Subscribe to room updates
+        let subscriber = redis.createClient();
+        subscriber.on("message", (channel, message) => {
+            ws.send(message)
+        })
+        subscriber.subscribe(`room:${room}`)
+        this.subscribers.push(subscriber);
     }
 
     handleMessage(message) {
+        /**
+         * 
+         */
         let packet = JSON.parse(message);
         let room = packet.room;
-        this.broadcastMessage(message, room);
+        this.publisher.publish(`room:${room}`, message);
+        this.connection.rpush(`room:${room}`, message);
+
+        // Expire the room key 24 hours after the last message is sent (continually refreshed after every message)
+        let expireTime = 86400;
+        let shortExpire = 30; // short expiration for testing
+        this.connection.expire(`room:${room}`, shortExpire);
     }
 
-    broadcastMessage(message, room) {
-        let targetClients = this.games[room];
-        for (let client of targetClients) {
-            client.send(message);
-        }
-    }
 
     getRoom(request) {
         return request.url.substr(1)
