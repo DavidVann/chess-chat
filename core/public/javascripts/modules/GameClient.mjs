@@ -1,6 +1,6 @@
-import Chess from './Chess.mjs';
+import Connect4 from './Connect4.mjs';
 
-const chatBox = document.getElementById('chat-box');
+const chatBox = document.querySelector('.chat');
 const chatDisplay = document.getElementById('receive-area');
 
 

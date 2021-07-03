@@ -4,16 +4,20 @@ block append styles
     link(rel='stylesheet', href='/stylesheets/modules/chat.css')
 
 block scripts
+    script(src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@3.0/dist/svg.min.js")
     script(defer, type="module", src="/javascripts/game-main.mjs")
 
 block sidebar
-    #chat-box
+    .chat.chat--visible
         #receive-area
         #send-area
             input(class="message-input")
             button(class="message-send")="Send"
+        button(class="chat__btn")="Chat"
 
 block content
+    .game
+        svg(id="game-container" viewBox="0 0 700 600" width="100%" height="100%")
 
 block extra
     #name-input-box 

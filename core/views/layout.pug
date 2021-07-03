@@ -1,9 +1,14 @@
 doctype html
 html
   head
+    meta(charset='utf-8')
     title= title
+
+    meta(name='viewport' content='width=device-width, initial-scale=1')
+
     block styles
       link(rel='stylesheet', href='/stylesheets/normalize.css')
+      link(rel='stylesheet', href='/stylesheets/base.css')
       link(rel='stylesheet', href='/stylesheets/layouts/grid.css')
       link(rel='stylesheet', href='/stylesheets/themes/light.css')
     block scripts
@@ -12,7 +17,7 @@ html
     #container
       header
         block header
-          h1 Chess
+          h1 Header
       nav
         block nav
           a(href="/game") New Game
