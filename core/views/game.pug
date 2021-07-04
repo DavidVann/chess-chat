@@ -2,6 +2,7 @@ extends layout
 
 block append styles
     link(rel='stylesheet', href='/stylesheets/modules/chat.css')
+    link(rel='stylesheet', href='/stylesheets/modules/game.css')
 
 block scripts
     script(src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@3.0/dist/svg.min.js")
@@ -9,18 +10,20 @@ block scripts
 
 block sidebar
     .chat.chat--visible
-        #receive-area
+        .chat__receive-area
         #send-area
-            input(class="message-input")
-            button(class="message-send")="Send"
+            input(class="chat__input")
+            button(class="chat__send")="Send"
         button(class="chat__btn")="Chat"
 
 block content
     .game
-        svg(id="game-container" viewBox="0 0 700 600" width="100%" height="100%")
+        svg(id="game-container" preserveAspectRatio="xMidYMid meet" viewBox="0 0 700 600" width="100%" height="100%")
 
 block extra
-    #name-input-box 
+    .name-box.name-box--hidden
         h2 Please enter your name:
-        input(id="name-input")
-        button(id="name-submit") Submit
+        input(class="name-box--input")
+        button(class="name-box--save") Save
+
+    .overlay.overlay--hidden

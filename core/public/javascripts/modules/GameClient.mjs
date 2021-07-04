@@ -1,27 +1,9 @@
 import Connect4 from './Connect4.mjs';
 
 const chatBox = document.querySelector('.chat');
-const chatDisplay = document.getElementById('receive-area');
+const chatDisplay = document.querySelector('.chat__receive-area');
 
 
-const hideNameInput = () => {
-    let nameInputBox = document.getElementById('name-input-box');
-    nameInputBox.style.display = "none";
-}
-
-const showNameInput = () => {
-    let nameInputBox = document.getElementById('name-input-box');
-    let nameInput = document.getElementById('name-input');
-    let nameSave = document.getElementById('name-submit');
-    nameSave.addEventListener('click', () => {
-        let name = nameInput.value;
-        if (name != "") {
-            localStorage.setItem('name', nameInput.value);
-            hideNameInput();
-        }
-    })
-    nameInputBox.style.display = "block";
-}
 
 class GameClient {
     constructor(origin, room) {
@@ -74,6 +56,7 @@ class GameClient {
     sendChat(message) {
         let packet = {
             "type": "chat",
+            "author": this.name,
             "room": this.room,
             "message": message,
             "timestamp": new Date()
@@ -95,8 +78,6 @@ class GameClient {
         let storedName = localStorage.getItem('name');
         if (storedName) {
             this.name = storedName;
-        } else {
-            showNameInput()
         }
     }
 }

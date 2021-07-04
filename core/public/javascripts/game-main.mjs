@@ -1,26 +1,86 @@
 import Connect4 from './modules/Connect4.mjs';
 import GameClient from './modules/GameClient.mjs';
 
+const nameBox = document.querySelector('.name-box');
+const nameInput = document.querySelector('.name-box--input');
+const nameSave = document.querySelector('.name-box--save');
+
+const chatBox = document.querySelector('.chat');
+const chatBtn = document.querySelector('.chat__btn');
+const chatInput = document.querySelector('.chat__input');
+const chatSend = document.querySelector('.chat__send');
+
+const overlay = document.querySelector('.overlay');
 
 const origin = location.origin.replace(/^http/, 'ws')
 const room = location.href.match(/(game\/)(?<room>[\w\d-]+)/).groups.room;
 
-const client = new GameClient(origin, room);
+const toggleNameBoxDisplay = () => {
+    nameBox.classList.toggle('name-box--hidden');
+}
 
-const messageInput = document.querySelector('.message-input');
-const messageSend = document.querySelector('.message-send');
+const toggleOverlayDisplay = () => {
+    overlay.classList.toggle('overlay--hidden');
+}
 
-messageSend.addEventListener('click', () => {
-    client.sendChat(messageInput.value);
+const alertEmptyName = () => {
+    let errorMessage = document.createElement('p');
+    errorMessage.textContent = 'Cannot leave name empty.'
+    errorMessage.classList.add('name-box__error');
+    nameBox.append(errorMessage);
+
+    setTimeout(() => {
+        errorMessage.classList.toggle('name-box__error--hidden');
+    }, 5000)
+}
+
+
+
+async function resolveName() {
+    return new Promise((resolve, reject) => {
+        let storedName = localStorage.getItem('name');
+        if (storedName === null) {
+            toggleNameBoxDisplay();
+            toggleOverlayDisplay();
+            nameSave.addEventListener('click', () => {
+                let name = nameInput.value;
+                if (name != "") {
+                    localStorage.setItem('name', nameInput.value);
+                    toggleNameBoxDisplay();
+                    toggleOverlayDisplay();
+                    resolve();
+                } else {
+                    alertEmptyName();
+                }
+            })
+        } else {
+            resolve();
+        }
+    })
+}
+
+async function connect(origin, room) {
+    let nameExists = await resolveName();
+    try {
+        let client = new GameClient(origin, room);
+        return client;
+    } catch(e) {
+        console.log(e);
+    }
+}
+
+connect(origin, room).then((client) => {
+    chatSend.addEventListener('click', () => {
+        client.sendChat(chatInput.value);
+    })
+
+    chatBtn.addEventListener('click', () => {
+        chatBox.classList.toggle('chat--visible')
+        chatBox.classList.toggle('chat--hidden');
+    })
 })
 
-const chatBox = document.querySelector('.chat');
-const chatBtn = document.querySelector('.chat__btn');
 
-chatBtn.addEventListener('click', () => {
-    chatBox.classList.toggle('chat--visible')
-    chatBox.classList.toggle('chat--hidden');
-})
 
 let draw = SVG().addTo('#game-container')
 
