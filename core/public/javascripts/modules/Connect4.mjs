@@ -9,24 +9,14 @@ class Connect4 {
     }
 
     dropChip(col) {
-        // for (let row = 0; row < this.rows; row++) {
-        //     if (this.grid[row][col] != 0) {
-        //         this.grid[row - 1][col] = 1;
-        //     }
-
-        //     else if (row === this.rows - 1) {
-        //         this.grid[row][col] = 1;
-        //     }
-        // }
-
-        let empty = this.findEmpty(col);
-        console.log(empty);
-        if (empty != -1) {
-            this.grid[empty][col] = 1;
+        let emptyRow = this.findEmptyRow(col);
+        console.log(emptyRow);
+        if (emptyRow != -1) {
+            this.grid[emptyRow][col] = 1;
         }
     }
 
-    findEmpty(col) {
+    findEmptyRow(col) {
         let emptyRow = -1;
         for (let row = 0; row < this.rows; row++) {
             if (this.grid[row][col] === 0) {
@@ -34,6 +24,28 @@ class Connect4 {
             }
         }
         return emptyRow;
+    }
+
+    checkVictory(row, col) {
+        let count = 1;
+
+        // Check horizontally
+        
+    }
+
+    count(row, col, dx, dy) {
+        let count = 0;
+        let y = row;
+        let x = col;
+        y += dy;
+        x += dx;
+        while (x >= 0 && x < this.cols && y >= 0 && y < this.rows) {
+            if (this.grid[y][x] === 1) {
+                count++;
+            }
+            y += dy;
+        }
+        return count;
     }
 
 

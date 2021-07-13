@@ -92,16 +92,17 @@ let chipRef = [];
 
 for (let i = 0; i < 7; i++) {
     for (let j = 0; j < 6; j++) {
-        let chip = draw.use(chipRed).move(i*100 + 3, j*100 + 3);
+        let chip = draw.use(chipRed).move(i*100 + 8, j*100 + 8);
         chipRef.push(chip);
     }
 }
 
+let maskOffset = 5;
 let holeMask = draw.mask();
 holeMask.add(draw.rect(700, 600).fill('white'));
 for (let i = 0; i < 7; i++) {
     for (let j = 0; j < 6; j++) {
-        let hole = draw.circle(90).move(i*100, j*100).fill('black')
+        let hole = draw.circle(90).move(i*100 + maskOffset, j*100 + maskOffset).fill('black')
         holeMask.add(hole);
     }
 }
