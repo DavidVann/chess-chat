@@ -61,8 +61,10 @@ async function resolveName() {
 
 async function connect(origin, room) {
     let nameExists = await resolveName();
+    console.log("resolved name");
     try {
         let client = new GameClient(origin, room);
+        console.log("created client");
         return client;
     } catch(e) {
         console.log(e);
@@ -113,5 +115,8 @@ let chipBoard = draw.rect(700, 600).fill('grey').maskWith(holeMask);
 let c = new Connect4();
 c.dropChip(0);
 c.dropChip(1);
+console.log(c.dropChip(0));
 c.dropChip(0);
+console.log(c.dropChip(0));
+
 console.log(c.grid);

@@ -8,12 +8,13 @@ class Connect4 {
         this.grid = [...Array(this.rows)].map( () => Array(this.cols).fill(0) )
     }
 
-    dropChip(col) {
+    dropChip(col, player) {
         let emptyRow = this.findEmptyRow(col);
-        console.log(emptyRow);
         if (emptyRow != -1) {
             this.grid[emptyRow][col] = 1;
         }
+
+        return this.checkVictory(emptyRow, col);
     }
 
     findEmptyRow(col) {
@@ -27,13 +28,18 @@ class Connect4 {
     }
 
     checkVictory(row, col) {
-        let count = 1;
+        let horizVict = this.count(row, col, 'horiz') === 4;
+        let vertiVict = this.count(row, col, 'verti') === 4;
+        let fdiagVict = this.count(row, col, 'fdiag') === 4;
+        let bdiagVict = this.count(row, col, 'bdiag') === 4;
 
-        // Check horizontally
-        
+        return horizVict || vertiVict || fdiagVict || bdiagVict;
     }
 
-    count(row, col, dx, dy) {
+    countCoord(row, col, dx, dy) {
+        /**
+         * Counts contiguous chips using starting position and a direction to count in.
+         */
         let count = 0;
         let y = row;
         let x = col;
@@ -44,18 +50,46 @@ class Connect4 {
                 count++;
             }
             y += dy;
+            x += dx;
         }
         return count;
     }
 
+    count(row, col, type) {
+        switch (type) {
+            case 'horiz':
+                return this.countCoord(row, col, -1, 0) + 1 + this.countCoord(row, col, 1, 0);
+            case 'verti':
+                return this.countCoord(row, col, 0, -1) + 1 + this.countCoord(row, col, 0, 1);
+            case 'fdiag':
+                return this.countCoord(row, col, 1, -1) + 1 + this.countCoord(row, col, -1, 1);
+            case 'bdiag':
+                return this.countCoord(row, col, -1, -1) + 1 + this.countCoord(row, col, 1, 1);
+        }
+    }
 
-    readState() {
+
+    readMove() {
 
     }
 
-    packageState() {
-
+    packageMove(col) {
+        let packet = {
+            "type": "move",
+            "column": col
+        }
     }
+}
+
+class Connect4Interface {
+    constructor() {
+        this.draw = SVG().addTo('#gameContainer')
+    }
+
+    dropChip() {
+        this.draw.rect();
+    }
+
 }
 
 export default Connect4;
