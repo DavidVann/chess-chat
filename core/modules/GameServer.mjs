@@ -1,6 +1,21 @@
 import WebSocket from 'ws';
 import redis from 'redis';
 
+
+function parseCookies(request) {
+    let cookies = {};
+
+    request.headers.cookie.split(';')
+        .map(cookie => cookie.trim().split('='))
+        .reduce((acc, cookie) => {
+            acc[cookie[0]] = cookie[1];
+            return acc;
+        }, cookies);
+
+    return cookies;
+}
+
+
 class GameServer {
     constructor() {
         // Set up WebSocket Server from ws
@@ -33,14 +48,49 @@ class GameServer {
          */
 
         let room = this.getRoom(request);
+        let cookies = parseCookies(request);
+        let playerID = cookies['playerID'];
+
+
+        // Assign player number
+        let playerPacket = {
+            "type": "player-assignment",
+        }
+        this.connection.multi()
+            .get(`room:${room}:player1`, (err, res) => {return res})
+            .get(`room:${room}:player2`, (err, res) => {return res})
+            .exec((err, replies) => {
+                console.log(replies);
+                let player1 = replies[0];
+                let player2 = replies[1];
+
+                if (player1 === playerID) {
+                    playerPacket['playerNum'] = 1;
+                } else if (player2 === playerID) {
+                    playerPacket['playerNum'] = 2;
+                } else if (player1 === null) {
+                    this.connection.set(`room:${room}:player1`, playerID)
+                    playerPacket['playerNum'] = 1;
+                } else if (player2 === null) {
+                    this.connection.set(`room:${room}:player2`, playerID);
+                    playerPacket['playerNum'] = 2;
+                }
+
+                ws.send(JSON.stringify(playerPacket));
+            })
+        // let player1 = this.connection.get(`room:${room}:player1`, (err, res) => {return res});
+        // let player2 = this.connection.get(`room:${room}:player2`, (err, res) => {return res});
+
+
+
+
 
         // Get message history and send to client
         this.connection.lrange(`room:${room}`, 0, -1, (err, reply) => {
             let packet = {
                 "type": "history",
-                "message": reply
+                "messages": reply
             }
-            console.log(packet);
 
             ws.send(JSON.stringify(packet));
         });

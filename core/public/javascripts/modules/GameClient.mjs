@@ -6,46 +6,59 @@ const chatDisplay = document.querySelector('.chat__receive-area');
 
 
 class GameClient {
-    constructor(origin, room) {
+    constructor(origin, room, name) {
         let roomURL = `${origin}/${room}`
         this.ws = new WebSocket(roomURL);
-        this.ws.onopen = () => {this.handleOpen()};
-        this.ws.onerror = (error) => {this.handleError(error)};
+        // this.ws.onopen = () => {this.handleOpen()};
+        // this.ws.onerror = (error) => {this.handleError(error)};
         this.ws.onmessage = (e) => {this.handleMessage(e)};
 
         this.room = room;
-        // this.name = null;
+        this.name = name;
+        this.game = new Connect4(this);
 
-        this.getName();
+        this.playerNum = null;
     }
     
-    handleOpen() {
-        this.sendChat('Connection Open')
-    }
+    // handleOpen() {
+    //     this.sendChat('Connection Open')
+    // }
 
-    handleError(error) {
-        console.log(`WebSocket error: ${error}`);
-    }
+    // handleError(error) {
+    //     console.log(`WebSocket error: ${error}`);
+    // }
 
     handleMessage(e) {
         let packet = JSON.parse(e.data);
+
+        console.log(packet);
+
         if (packet.type === "chat") {
-            this.displayChatMessage(packet)
+            this.readChat(packet)
         }
 
         else if (packet.type === "history") {
-            for (let messagePacket of packet.message) {
-                this.displayChatMessage(JSON.parse(messagePacket));
+            for (let subPacket of packet.messages) {
+                subPacket = JSON.parse(subPacket);
+                if (subPacket.type === "chat") {
+                    this.readChat(subPacket);
+                } else if (packet.type === "move") {
+                    this.readMove(subPacket);
+                }
             }
         }
 
-        else if (packet.type === "state") {
+        else if (packet.type === "move") {
+            this.readMove(packet)
+        }
 
+        else if (packet.type === "player-assignment") {
+            this.playerNum = packet.playerNum;
         }
 
     }
 
-    displayChatMessage(packet) {
+    readChat(packet) {
         console.log(packet.message);
         let newMessage = document.createElement('p');
         newMessage.classList.add('message')
@@ -53,33 +66,58 @@ class GameClient {
         chatDisplay.append(newMessage);
     }
 
-    sendChat(message) {
+    readMove(packet) {
+        this.game.readMove(packet);
+    }
+
+    send(type, message) {
         let packet = {
-            "type": "chat",
+            "type": type,
             "author": this.name,
             "room": this.room,
-            "message": message,
+            "player": this.playerNum,
             "timestamp": new Date()
-        };
+        }
+
+        switch (type) {
+            case "chat":
+                packet["message"] = message;
+                break;
+            case "move":
+                packet["column"] = message;
+                break;
+        }
 
         this.ws.send(JSON.stringify(packet));
     }
 
-    sendState(message) {
-        let packet = {
-            "type": "state",
-            "room": this.room,
-            "message": message,
-            "timestamp": new Date()
-        }
-    }
+    // sendChat(message) {
+    //     let packet = {
+    //         "type": "chat",
+    //         "author": this.name,
+    //         "room": this.room,
+    //         "message": message,
+    //         "timestamp": new Date()
+    //     };
 
-    getName() {
-        let storedName = localStorage.getItem('name');
-        if (storedName) {
-            this.name = storedName;
-        }
-    }
+    //     this.ws.send(JSON.stringify(packet));
+    // }
+
+    // sendState(message) {
+    //     let packet = {
+    //         "type": "state",
+    //         "room": this.room,
+    //         "message": message,
+    //         "timestamp": new Date()
+    //     }
+    // }
+
+    // getName() {
+    //     let storedName = localStorage.getItem('name');
+    //     if (storedName) {
+    //         this.name = storedName;
+    //     }
+    // }
 }
 
 export default GameClient;

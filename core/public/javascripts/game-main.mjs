@@ -1,4 +1,4 @@
-import Connect4 from './modules/Connect4.mjs';
+// import Connect4 from './modules/Connect4.mjs';
 import GameClient from './modules/GameClient.mjs';
 
 const nameBox = document.querySelector('.name-box');
@@ -48,75 +48,91 @@ async function resolveName() {
                     localStorage.setItem('name', nameInput.value);
                     toggleNameBoxDisplay();
                     toggleOverlayDisplay();
-                    resolve();
+                    resolve(name);
                 } else {
                     alertEmptyName();
                 }
             })
         } else {
-            resolve();
+            resolve(storedName);
         }
     })
 }
 
+
 async function connect(origin, room) {
-    let nameExists = await resolveName();
-    console.log("resolved name");
-    try {
-        let client = new GameClient(origin, room);
-        console.log("created client");
-        return client;
-    } catch(e) {
-        console.log(e);
-    }
+    let name = await resolveName();
+    return new Promise((resolve, reject) => {
+        let client = new GameClient(origin, room, name);
+
+        client.ws.onopen = () => {
+            client.send("chat", `${name} connected.`)
+            resolve(client);
+        }
+
+        client.ws.onerror = (error) => {
+            reject(error)
+        }
+    })
 }
 
 connect(origin, room).then((client) => {
     chatSend.addEventListener('click', () => {
-        client.sendChat(chatInput.value);
+        client.send("chat", chatInput.value);
+        chatInput.value = '';
     })
 
     chatBtn.addEventListener('click', () => {
         chatBox.classList.toggle('chat--visible')
         chatBox.classList.toggle('chat--hidden');
     })
+
+    client.game.ui.initialize();
+
+    client.game.dropChip(0, 1);
+    client.game.dropChip(1, 1);
+    // client.game.dropChip(0, 1);
+
 })
 
 
 
-let draw = SVG().addTo('#game-container')
+// let draw = SVG().addTo('#game-container')
 
-let chipRed = draw.symbol();
-chipRed.circle(85).fill('red').stroke({color: 'black', width: 1});
+// let chipRed = draw.symbol();
+// chipRed.circle(85).fill('red').stroke({color: 'black', width: 1});
 
-let chipRef = [];
-
-
-for (let i = 0; i < 7; i++) {
-    for (let j = 0; j < 6; j++) {
-        let chip = draw.use(chipRed).move(i*100 + 8, j*100 + 8);
-        chipRef.push(chip);
-    }
-}
-
-let maskOffset = 5;
-let holeMask = draw.mask();
-holeMask.add(draw.rect(700, 600).fill('white'));
-for (let i = 0; i < 7; i++) {
-    for (let j = 0; j < 6; j++) {
-        let hole = draw.circle(90).move(i*100 + maskOffset, j*100 + maskOffset).fill('black')
-        holeMask.add(hole);
-    }
-}
+// let chipRef = [];
 
 
-let chipBoard = draw.rect(700, 600).fill('grey').maskWith(holeMask);
+// for (let i = 0; i < 7; i++) {
+//     for (let j = 0; j < 6; j++) {
+//         let chip = draw.use(chipRed).move(i*100 + 8, j*100 + 8);
+//         chipRef.push(chip);
+//     }
+// }
 
-let c = new Connect4();
-c.dropChip(0);
-c.dropChip(1);
-console.log(c.dropChip(0));
-c.dropChip(0);
-console.log(c.dropChip(0));
+// let maskOffset = 5;
+// let holeMask = draw.mask();
+// holeMask.add(draw.rect(700, 600).fill('white'));
+// for (let i = 0; i < 7; i++) {
+//     for (let j = 0; j < 6; j++) {
+//         let hole = draw.circle(90).move(i*100 + maskOffset, j*100 + maskOffset).fill('black')
+//         holeMask.add(hole);
+//     }
+// }
 
-console.log(c.grid);
+
+// let chipBoard = draw.rect(700, 600).fill('grey').maskWith(holeMask);
+
+// let c = new Connect4();
+
+// c.ui.testFillGrid();
+
+// c.dropChip(0);
+// c.dropChip(1);
+// console.log(c.dropChip(0));
+// c.dropChip(0);
+// console.log(c.dropChip(0));
+
+// console.log(c.grid);
