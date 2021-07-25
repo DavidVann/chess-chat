@@ -1,2 +1,2 @@
 # chess-chat
-Aiming to create something like a basic multiplayer game (thinking chess at the moment) with chat functionality.
+Aiming to create something like a basic Connect 4 game with chat functionality.
