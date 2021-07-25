@@ -1,6 +1,9 @@
 import WebSocket from 'ws';
 import redis from 'redis';
 
+const expireTime = 86400; // seconds in a day
+const shortExpire = 30; // short expiration for testing
+
 
 function parseCookies(request) {
     let cookies = {};
@@ -65,18 +68,18 @@ class GameServer {
                 let player2 = replies[1];
 
                 if (player1 === playerID) {
-                    playerPacket['playerNum'] = 1;
+                    playerPacket['player'] = 1;
                 } else if (player2 === playerID) {
-                    playerPacket['playerNum'] = 2;
+                    playerPacket['player'] = 2;
                 } else if (player1 === null) {
-                    this.connection.set(`room:${room}:player1`, playerID)
-                    playerPacket['playerNum'] = 1;
+                    this.connection.set(`room:${room}:player1`, playerID, 'EX', expireTime);
+                    playerPacket['player'] = 1;
                 } else if (player2 === null) {
-                    this.connection.set(`room:${room}:player2`, playerID);
-                    playerPacket['playerNum'] = 2;
+                    this.connection.set(`room:${room}:player2`, playerID, 'EX', expireTime);
+                    playerPacket['player'] = 2;
                 }
 
-                ws.send(JSON.stringify(playerPacket));
+                ws.send(JSON.stringify(playerPacket)); // Let the player know whether they are player 1 or player 2.
             })
         // let player1 = this.connection.get(`room:${room}:player1`, (err, res) => {return res});
         // let player2 = this.connection.get(`room:${room}:player2`, (err, res) => {return res});
@@ -91,6 +94,7 @@ class GameServer {
                 "type": "history",
                 "messages": reply
             }
+            console.log(packet);
 
             ws.send(JSON.stringify(packet));
         });
@@ -109,13 +113,13 @@ class GameServer {
          * 
          */
         let packet = JSON.parse(message);
+        console.log(packet);
         let room = packet.room;
         this.publisher.publish(`room:${room}`, message);
         this.connection.rpush(`room:${room}`, message);
 
         // Expire the room key 24 hours after the last message is sent (continually refreshed after every message)
-        let expireTime = 86400;
-        let shortExpire = 30; // short expiration for testing
+
         this.connection.expire(`room:${room}`, shortExpire);
     }
 

@@ -59,24 +59,29 @@ async function resolveName() {
     })
 }
 
+async function resolvePlayer(client) {
+    /**
+     * Poll for whether the server has assigned client a player number.
+     */
+
+    // https://stackoverflow.com/questions/7307983/while-variable-is-not-defined-wait
+    while (client.player === null) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        console.log("Waiting for player assignment.");
+    }
+    // return new Promise(resolve => resolve())
+}
+
 
 async function connect(origin, room) {
     let name = await resolveName();
-    return new Promise((resolve, reject) => {
-        let client = new GameClient(origin, room, name);
-
-        client.ws.onopen = () => {
-            client.send("chat", `${name} connected.`)
-            resolve(client);
-        }
-
-        client.ws.onerror = (error) => {
-            reject(error)
-        }
-    })
+    let client = new GameClient(origin, room, name);
+    await resolvePlayer(client);
+    return client;
 }
 
 connect(origin, room).then((client) => {
+    console.log("Finished connecting");
     chatSend.addEventListener('click', () => {
         client.send("chat", chatInput.value);
         chatInput.value = '';
@@ -87,11 +92,15 @@ connect(origin, room).then((client) => {
         chatBox.classList.toggle('chat--hidden');
     })
 
-    client.game.ui.initialize();
+    // client.game.ui.initialize();
 
-    client.game.dropChip(0, 1);
-    client.game.dropChip(1, 1);
-    // client.game.dropChip(0, 1);
+    client.game.attemptMove(0);
+    client.game.attemptMove(1);
+    client.game.attemptMove(0);
+    // client.game.attemptMove(0);
+    // client.game.attemptMove(0);
+
+    client.send("chat", `${client.name} connected.`);
 
 })
 
@@ -121,18 +130,3 @@ connect(origin, room).then((client) => {
 //         holeMask.add(hole);
 //     }
 // }
-
-
-// let chipBoard = draw.rect(700, 600).fill('grey').maskWith(holeMask);
-
-// let c = new Connect4();
-
-// c.ui.testFillGrid();
-
-// c.dropChip(0);
-// c.dropChip(1);
-// console.log(c.dropChip(0));
-// c.dropChip(0);
-// console.log(c.dropChip(0));
-
-// console.log(c.grid);

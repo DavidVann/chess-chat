@@ -4,26 +4,42 @@
 class Connect4 {
     rows = 6;
     cols = 7;
-    constructor(connection) {
-        this.connection = connection;
+    constructor(client) {
+        this.client = client;
         this.grid = [...Array(this.rows)].map( () => Array(this.cols).fill(0) )
         this.ui = new Connect4Interface();
     }
 
-    dropChip(col, player) {
+    attemptMove(col) {
+        /**
+         * Finds a valid position for a move according to the client's current grid and sends it to the server for confirmation.
+         */
         let emptyRow = this.findEmptyRow(col);
         if (emptyRow != -1) {
-            if (player === 1) {
-                this.grid[emptyRow][col] = 1;
-                this.connection.send("move", col);
-            } else {
-                this.grid[emptyRow][col] = 2;
-            }
-
-            this.ui.dropChip(emptyRow, col, player);
+            this.client.send("move", [emptyRow, col]);
+            this.grid[emptyRow][col] = this.player;
+        } else {
+            console.log("invalid move");
         }
+    }
 
-        return this.checkVictory(emptyRow, col);
+    confirmMove(packet) {
+        /**
+         * Called upon receiving a message back from the server confirming that the move was received.
+         * 
+         * Updates the client's logical grid and updates UI to show where the chip was placed.
+         */
+        let player = packet["player"];
+        let row = packet["row:col"][0];
+        let col = packet["row:col"][1];
+
+        this.grid[row][col] = player;
+
+        this.ui.confirmMove(row, col, player);
+
+        if (this.checkVictory(row, col)) {
+            console.log(`Player ${player} won!`)
+        }
     }
 
     findEmptyRow(col) {
@@ -82,10 +98,10 @@ class Connect4 {
     }
 
 
-    readMove(packet) {
-        let col = packet.column;
-        this.dropChip(col, 2);
-    }
+    // readMove(packet) {
+    //     let col = packet.column;
+    //     this.dropChip(col, packet.player);
+    // }
 
 }
 
@@ -104,6 +120,8 @@ class Connect4Interface {
 
         this.chipRef1 = [];
         this.chipRef2 = [];
+
+        this.initialize();
     }
 
     initialize() {
@@ -135,7 +153,7 @@ class Connect4Interface {
         let chipBoard = this.draw.rect(700, 600).fill('grey').maskWith(holeMask);
     }
 
-    dropChip(row, col, player) {
+    confirmMove(row, col, player) {
         let chip;
         if (player === 1) {
             chip = this.chipRef1.pop()

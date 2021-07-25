@@ -9,24 +9,24 @@ class GameClient {
     constructor(origin, room, name) {
         let roomURL = `${origin}/${room}`
         this.ws = new WebSocket(roomURL);
-        // this.ws.onopen = () => {this.handleOpen()};
-        // this.ws.onerror = (error) => {this.handleError(error)};
+        this.ws.onopen = () => {this.handleOpen()};
+        this.ws.onerror = (error) => {this.handleError(error)};
         this.ws.onmessage = (e) => {this.handleMessage(e)};
 
         this.room = room;
         this.name = name;
         this.game = new Connect4(this);
 
-        this.playerNum = null;
+        this.player = null;
     }
     
-    // handleOpen() {
-    //     this.sendChat('Connection Open')
-    // }
+    handleOpen() {
+        console.log('Connection Open')
+    }
 
-    // handleError(error) {
-    //     console.log(`WebSocket error: ${error}`);
-    // }
+    handleError(error) {
+        console.log(`WebSocket error: ${error}`);
+    }
 
     handleMessage(e) {
         let packet = JSON.parse(e.data);
@@ -40,9 +40,11 @@ class GameClient {
         else if (packet.type === "history") {
             for (let subPacket of packet.messages) {
                 subPacket = JSON.parse(subPacket);
+                console.log(subPacket);
                 if (subPacket.type === "chat") {
                     this.readChat(subPacket);
-                } else if (packet.type === "move") {
+                } else if (subPacket.type === "move") {
+                    console.log("reading move from history");
                     this.readMove(subPacket);
                 }
             }
@@ -53,7 +55,7 @@ class GameClient {
         }
 
         else if (packet.type === "player-assignment") {
-            this.playerNum = packet.playerNum;
+            this.player = packet.player;
         }
 
     }
@@ -67,7 +69,7 @@ class GameClient {
     }
 
     readMove(packet) {
-        this.game.readMove(packet);
+        this.game.confirmMove(packet);
     }
 
     send(type, message) {
@@ -75,7 +77,7 @@ class GameClient {
             "type": type,
             "author": this.name,
             "room": this.room,
-            "player": this.playerNum,
+            "player": this.player,
             "timestamp": new Date()
         }
 
@@ -84,7 +86,7 @@ class GameClient {
                 packet["message"] = message;
                 break;
             case "move":
-                packet["column"] = message;
+                packet["row:col"] = message;
                 break;
         }
 
