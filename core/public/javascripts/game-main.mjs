@@ -10,6 +10,7 @@ const chatBtn = document.querySelector('.chat__btn');
 const chatInput = document.querySelector('.chat__input');
 const chatSend = document.querySelector('.chat__send');
 
+
 const overlay = document.querySelector('.overlay');
 
 const origin = location.origin.replace(/^http/, 'ws')
@@ -77,6 +78,7 @@ async function connect(origin, room) {
     let name = await resolveName();
     let client = new GameClient(origin, room, name);
     await resolvePlayer(client);
+    client.startGame();
     return client;
 }
 
@@ -94,9 +96,9 @@ connect(origin, room).then((client) => {
 
     // client.game.ui.initialize();
 
-    client.game.attemptMove(0);
-    client.game.attemptMove(1);
-    client.game.attemptMove(0);
+    // client.game.attemptMove(0);
+    // client.game.attemptMove(1);
+    // client.game.attemptMove(0);
     // client.game.attemptMove(0);
     // client.game.attemptMove(0);
 
