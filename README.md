@@ -1,2 +1,2 @@
-# chess-chat
+# connect4-chat
 Aiming to create something like a basic Connect 4 game with chat functionality.
