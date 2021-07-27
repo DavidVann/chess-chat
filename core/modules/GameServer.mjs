@@ -1,4 +1,23 @@
 import WebSocket from 'ws';
+import redis from 'redis';
+
+const expireTime = 86400; // seconds in a day
+const shortExpire = 30; // short expiration for testing
+
+
+function parseCookies(request) {
+    let cookies = {};
+
+    request.headers.cookie.split(';')
+        .map(cookie => cookie.trim().split('='))
+        .reduce((acc, cookie) => {
+            acc[cookie[0]] = cookie[1];
+            return acc;
+        }, cookies);
+
+    return cookies;
+}
+
 
 class GameServer {
     constructor() {
@@ -11,7 +30,10 @@ class GameServer {
             })
         });
 
-        this.games = {}; // Object for storing game rooms
+        // this.games = {}; // Object for storing game rooms
+        this.publisher = redis.createClient();
+        this.connection = redis.createClient();
+        this.subscribers = [];
 
     }
 
@@ -24,25 +46,83 @@ class GameServer {
     }
 
     handleConnection(ws, request) {
+        /**
+         * Sends client message history and subscribes client to room updates.
+         */
+
         let room = this.getRoom(request);
-        if (!this.games[room]) {
-            this.games[room] = [];
+        let cookies = parseCookies(request);
+        let playerID = cookies['playerID'];
+
+
+        // Assign player number
+        let playerPacket = {
+            "type": "player-assignment",
         }
-        this.games[room].push(ws);
+        this.connection.multi()
+            .get(`room:${room}:player1`, (err, res) => {return res})
+            .get(`room:${room}:player2`, (err, res) => {return res})
+            .exec((err, replies) => {
+                console.log(replies);
+                let player1 = replies[0];
+                let player2 = replies[1];
+
+                if (player1 === playerID) {
+                    playerPacket['player'] = 1;
+                } else if (player2 === playerID) {
+                    playerPacket['player'] = 2;
+                } else if (player1 === null) {
+                    this.connection.set(`room:${room}:player1`, playerID, 'EX', expireTime);
+                    playerPacket['player'] = 1;
+                } else if (player2 === null) {
+                    this.connection.set(`room:${room}:player2`, playerID, 'EX', expireTime);
+                    playerPacket['player'] = 2;
+                }
+
+                ws.send(JSON.stringify(playerPacket)); // Let the player know whether they are player 1 or player 2.
+            })
+        // let player1 = this.connection.get(`room:${room}:player1`, (err, res) => {return res});
+        // let player2 = this.connection.get(`room:${room}:player2`, (err, res) => {return res});
+
+
+
+
+
+        // Get message history and send to client
+        this.connection.lrange(`room:${room}`, 0, -1, (err, reply) => {
+            let packet = {
+                "type": "history",
+                "messages": reply
+            }
+            console.log(packet);
+
+            ws.send(JSON.stringify(packet));
+        });
+
+        // Subscribe to room updates
+        let subscriber = redis.createClient();
+        subscriber.on("message", (channel, message) => {
+            ws.send(message)
+        })
+        subscriber.subscribe(`room:${room}`)
+        this.subscribers.push(subscriber);
     }
 
     handleMessage(message) {
+        /**
+         * 
+         */
         let packet = JSON.parse(message);
+        console.log(packet);
         let room = packet.room;
-        this.broadcastMessage(message, room);
+        this.publisher.publish(`room:${room}`, message);
+        this.connection.rpush(`room:${room}`, message);
+
+        // Expire the room key 24 hours after the last message is sent (continually refreshed after every message)
+
+        this.connection.expire(`room:${room}`, shortExpire);
     }
 
-    broadcastMessage(message, room) {
-        let targetClients = this.games[room];
-        for (let client of targetClients) {
-            client.send(message);
-        }
-    }
 
     getRoom(request) {
         return request.url.substr(1)

@@ -1,18 +1,8 @@
-// let createError = require('http-errors');
-// let express = require('express');
-// let path = require('path');
-// let cookieParser = require('cookie-parser');
-// let logger = require('morgan');
-
 import createError from 'http-errors';
 import express from 'express';
 import path from 'path';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
-
-// let indexRouter = require('./routes/index');
-// let usersRouter = require('./routes/users');
-// let gameRouter = require('./routes/game');
 
 import indexRouter from './routes/index.mjs';
 import usersRouter from './routes/users.mjs';

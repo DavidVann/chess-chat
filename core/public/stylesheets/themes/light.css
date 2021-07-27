@@ -1,8 +1,15 @@
-body {
-    padding: 50px;
-    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
-}
+
   
 a {
     color: #00B7FF;
+}
+
+button {
+    background-color: #00B7FF;
+}
+
+:disabled {
+    background-color: transparent;
+    border-color: whitesmoke;
+    /* color: whitesmoke; */
 }

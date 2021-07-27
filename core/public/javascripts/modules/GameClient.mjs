@@ -1,29 +1,10 @@
-import Chess from './Chess.mjs';
+import Connect4 from './Connect4.mjs';
 
-const chatBox = document.getElementById('chat-box');
-const chatDisplay = document.getElementById('receive-area');
-
-
-const hideNameInput = () => {
-    let nameInputBox = document.getElementById('name-input-box');
-    nameInputBox.style.display = "none";
-}
-
-const showNameInput = () => {
-    let nameInputBox = document.getElementById('name-input-box');
-    let nameInput = document.getElementById('name-input');
-    let nameSave = document.getElementById('name-submit');
-    nameSave.addEventListener('click', () => {
-        localStorage.setItem('name', nameInput.value);
-        hideNameInput();
-    })
-    nameInputBox.style.display = "block";
-}
-
-showNameInput();
+const chatBox = document.querySelector('.chat');
+const chatDisplay = document.querySelector('.chat__receive-area');
 
 class GameClient {
-    constructor(origin, room) {
+    constructor(origin, room, name) {
         let roomURL = `${origin}/${room}`
         this.ws = new WebSocket(roomURL);
         this.ws.onopen = () => {this.handleOpen()};
@@ -31,26 +12,59 @@ class GameClient {
         this.ws.onmessage = (e) => {this.handleMessage(e)};
 
         this.room = room;
-        this.name = null;
+        this.name = name;
+        this.player = null;
+
+        this.game = null;
+    }
+
+    startGame() {
+        this.game = new Connect4(this);
     }
     
     handleOpen() {
-        this.sendChat('Connection Open')
+        console.log('Connection Open')
     }
 
     handleError(error) {
         console.log(`WebSocket error: ${error}`);
     }
 
-    handleMessage(e) {
+    async handleMessage(e) {
         let packet = JSON.parse(e.data);
+
+        console.log(packet);
+
         if (packet.type === "chat") {
-            this.displayChatMessage(packet)
+            this.readChat(packet)
+        }
+
+        else if (packet.type === "history") {
+            for (let subPacket of packet.messages) {
+                subPacket = JSON.parse(subPacket);
+                console.log(subPacket);
+                if (subPacket.type === "chat") {
+                    this.readChat(subPacket);
+                } else if (subPacket.type === "move") {
+                    // Need to wait until the game is initialized before re-adding moves to board from history.
+                    await this.waitGameReady();
+                    console.log("reading move from history");
+                    this.readMove(subPacket);
+                }
+            }
+        }
+
+        else if (packet.type === "move") {
+            this.readMove(packet)
+        }
+
+        else if (packet.type === "player-assignment") {
+            this.player = packet.player;
         }
 
     }
 
-    displayChatMessage(packet) {
+    readChat(packet) {
         console.log(packet.message);
         let newMessage = document.createElement('p');
         newMessage.classList.add('message')
@@ -58,44 +72,65 @@ class GameClient {
         chatDisplay.append(newMessage);
     }
 
-    sendChat(message) {
+    readMove(packet) {
+        this.game.confirmMove(packet);
+    }
+
+    send(type, message) {
         let packet = {
-            "type": "chat",
+            "type": type,
+            "author": this.name,
             "room": this.room,
-            "message": message,
+            "player": this.player,
             "timestamp": new Date()
-        };
+        }
+
+        switch (type) {
+            case "chat":
+                packet["message"] = message;
+                break;
+            case "move":
+                packet["row:col"] = message;
+                break;
+        }
 
         this.ws.send(JSON.stringify(packet));
     }
 
-    sendState(message) {
-        let packet = {
-            "type": "state",
-            "room": this.room,
-            "message": message,
-            "timestamp": new Date()
+    async waitGameReady() {
+        while (this.game === null) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            console.log("Waiting for game setup.");
         }
     }
 
-    getName() {
-        let storedName = localStorage.getItem('name');
-        if (storedName) {
-            this.name = storedName;
-        } else {
+    // sendChat(message) {
+    //     let packet = {
+    //         "type": "chat",
+    //         "author": this.name,
+    //         "room": this.room,
+    //         "message": message,
+    //         "timestamp": new Date()
+    //     };
 
-        }
-    }
-}
+    //     this.ws.send(JSON.stringify(packet));
+    // }
 
-class Chat {
-    constructor() {
-        this.name = null;
-    }
-}
+    // sendState(message) {
+    //     let packet = {
+    //         "type": "state",
+    //         "room": this.room,
+    //         "message": message,
+    //         "timestamp": new Date()
+    //     }
+    // }
 
-class Game {
-
+    // getName() {
+    //     let storedName = localStorage.getItem('name');
+    //     if (storedName) {
+    //         this.name = storedName;
+    //     }
+    // }
 }
 
 export default GameClient;
