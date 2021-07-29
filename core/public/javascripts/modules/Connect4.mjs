@@ -11,15 +11,26 @@ function getMouseCoords(event) {
 }
 
 function cursorMove(event) {
-    if (event.touches) {
-        event = event.touches[0]
+    if (!this.disabled) {
+        if (event.touches) {
+            event = event.touches[0];
+        }
+    
+        let [x, y, width] = getMouseCoords(event);
+        this.cursorX = x;
+        this.cursorY = y;
+        this.width = width;
+        this.setTemplateChipPos();
     }
+}
 
-    let [x, y, width] = getMouseCoords(event);
-    this.cursorX = x;
-    this.cursorY = y;
-    this.width = width;
-    this.setTemplateChipPos();
+function cursorClick(event) {
+    if (!this.disabled) {
+        if (event.touches) {
+            event = event.touches[0];
+        }
+        this.game.attemptMove(this.templateCol);
+    }
 }
 
 
@@ -40,6 +51,7 @@ class Connect4 {
         if (emptyRow != -1) {
             this.client.send("move", [emptyRow, col]);
             this.grid[emptyRow][col] = this.player;
+            this.ui.disabled = true;
         } else {
             console.log("invalid move");
         }
@@ -56,11 +68,14 @@ class Connect4 {
         let col = packet["row:col"][1];
 
         this.grid[row][col] = player;
-
         this.ui.confirmMove(row, col, player);
 
         if (this.checkVictory(row, col)) {
             console.log(`Player ${player} won!`)
+        }
+
+        else if (player != this.client.player) {
+            this.ui.disabled = false;
         }
     }
 
@@ -93,7 +108,8 @@ class Connect4 {
         y += dy;
         x += dx;
         while (x >= 0 && x < this.cols && y >= 0 && y < this.rows) {
-            if (this.grid[y][x] === 1) {
+            let val = this.grid[y][x]
+            if (this.grid[y][x] === this.client.player) {
                 count++;
             } else {
                 break;
@@ -140,6 +156,8 @@ class Connect4Interface {
     chipSpacing = 100;
     chipOffset = 8;
     width = null;
+
+    disabled = false;
 
     constructor(client, game) {
         this.client = client;
@@ -199,22 +217,12 @@ class Connect4Interface {
         let chipBoard = this.draw.rect(700, 600).fill('grey').maskWith(holeMask);
 
 
-        // gameBox.firstChild.addEventListener('mousemove', (e) => {
-        //     let [x, y, width] = getMouseCoords(e);
-        //     this.cursorX = x;
-        //     this.cursorY = y;
-        //     this.width = width;
-        //     this.setTemplateChipPos();
-
-        // })
-
         gameBox.firstChild.addEventListener('mousemove', cursorMove.bind(this));
         gameBox.firstChild.addEventListener('touchstart', cursorMove.bind(this));
         gameBox.firstChild.addEventListener('touchmove', cursorMove.bind(this));
 
-
-        gameBox.firstChild.addEventListener('mousedown', (e) => {this.game.attemptMove(this.templateCol);});
-        gameBox.firstChild.addEventListener('touchend', (e) => {this.game.attemptMove(this.templateCol);});
+        gameBox.firstChild.addEventListener('mousedown', cursorClick.bind(this));
+        gameBox.firstChild.addEventListener('touchend', cursorClick.bind(this));
 
 
 
