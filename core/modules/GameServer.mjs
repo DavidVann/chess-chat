@@ -2,7 +2,7 @@ import WebSocket from 'ws';
 import redis from 'redis';
 
 const expireTime = 86400; // seconds in a day
-const shortExpire = 30; // short expiration for testing
+const shortExpire = 240; // short expiration for testing
 
 
 function parseCookies(request) {

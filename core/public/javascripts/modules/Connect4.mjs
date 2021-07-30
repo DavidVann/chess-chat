@@ -109,6 +109,7 @@ class Connect4 {
         x += dx;
         while (x >= 0 && x < this.cols && y >= 0 && y < this.rows) {
             let val = this.grid[y][x]
+            console.log(`Check row ${y}, col ${x}: ${val}`);
             if (this.grid[y][x] === this.client.player) {
                 count++;
             } else {
@@ -121,18 +122,20 @@ class Connect4 {
     }
 
     count(row, col, type) {
+        let countInitialChip = (this.grid[row][col] === this.client.player) ? 1 : 0;
+
         switch (type) {
             case 'horiz':
-                return this.countCoord(row, col, -1, 0) + 1 + this.countCoord(row, col, 1, 0);
+                return this.countCoord(row, col, -1, 0) + countInitialChip + this.countCoord(row, col, 1, 0);
                 break;
             case 'verti':
-                return this.countCoord(row, col, 0, -1) + 1 + this.countCoord(row, col, 0, 1);
+                return this.countCoord(row, col, 0, -1) + countInitialChip + this.countCoord(row, col, 0, 1);
                 break;
             case 'fdiag':
-                return this.countCoord(row, col, 1, -1) + 1 + this.countCoord(row, col, -1, 1);
+                return this.countCoord(row, col, 1, -1) + countInitialChip + this.countCoord(row, col, -1, 1);
                 break;
             case 'bdiag':
-                return this.countCoord(row, col, -1, -1) + 1 + this.countCoord(row, col, 1, 1);
+                return this.countCoord(row, col, -1, -1) + countInitialChip + this.countCoord(row, col, 1, 1);
                 break;
         }
     }
