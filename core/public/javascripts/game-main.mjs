@@ -94,41 +94,6 @@ connect(origin, room).then((client) => {
         chatBox.classList.toggle('chat--hidden');
     })
 
-    // client.game.ui.initialize();
-
-    // client.game.attemptMove(0);
-    // client.game.attemptMove(1);
-    // client.game.attemptMove(0);
-    // client.game.attemptMove(0);
-    // client.game.attemptMove(0);
-
-    client.send("chat", `${client.name} connected.`);
+    client.send("server", `${client.name} connected.`);
 
 })
-
-
-
-// let draw = SVG().addTo('#game-container')
-
-// let chipRed = draw.symbol();
-// chipRed.circle(85).fill('red').stroke({color: 'black', width: 1});
-
-// let chipRef = [];
-
-
-// for (let i = 0; i < 7; i++) {
-//     for (let j = 0; j < 6; j++) {
-//         let chip = draw.use(chipRed).move(i*100 + 8, j*100 + 8);
-//         chipRef.push(chip);
-//     }
-// }
-
-// let maskOffset = 5;
-// let holeMask = draw.mask();
-// holeMask.add(draw.rect(700, 600).fill('white'));
-// for (let i = 0; i < 7; i++) {
-//     for (let j = 0; j < 6; j++) {
-//         let hole = draw.circle(90).move(i*100 + maskOffset, j*100 + maskOffset).fill('black')
-//         holeMask.add(hole);
-//     }
-// }

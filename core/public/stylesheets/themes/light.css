@@ -1,4 +1,10 @@
+:root {
+    --chat-send-bg: blue;
+    --chat-send-color: white;
+    --chat-receive-bg: red;
+    --chat-server-bg: yellow;
 
+}
   
 a {
     color: #00B7FF;

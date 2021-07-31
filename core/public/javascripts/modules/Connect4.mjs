@@ -109,7 +109,7 @@ class Connect4 {
         x += dx;
         while (x >= 0 && x < this.cols && y >= 0 && y < this.rows) {
             let val = this.grid[y][x]
-            console.log(`Check row ${y}, col ${x}: ${val}`);
+            // console.log(`Check row ${y}, col ${x}: ${val}`);
             if (this.grid[y][x] === this.client.player) {
                 count++;
             } else {
@@ -196,9 +196,7 @@ class Connect4Interface {
                 }
             }
         }
-
-        console.log(this.client.player);
-
+        
         // Draw a template chip that's used for showing where a chip will be dropped based on the mouse.
         if (this.client.player === 1) {
             this.templateChip = this.draw.use(this.chip1).move(this.chipOffset, this.chipOffset);

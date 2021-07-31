@@ -2,7 +2,7 @@ import WebSocket from 'ws';
 import redis from 'redis';
 
 const expireTime = 86400; // seconds in a day
-const shortExpire = 240; // short expiration for testing
+const shortExpire = 600; // short expiration for testing
 
 
 function parseCookies(request) {
@@ -67,10 +67,12 @@ class GameServer {
                 let player1 = replies[0];
                 let player2 = replies[1];
 
+                // If a player is rejoining the room (refresh, disconnection, etc.)
                 if (player1 === playerID) {
                     playerPacket['player'] = 1;
                 } else if (player2 === playerID) {
                     playerPacket['player'] = 2;
+                // If a player is new to the room
                 } else if (player1 === null) {
                     this.connection.set(`room:${room}:player1`, playerID, 'EX', expireTime);
                     playerPacket['player'] = 1;

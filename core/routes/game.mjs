@@ -4,7 +4,11 @@ import * as uuid from 'uuid';
 import redis from 'redis';
 
 let router = express.Router();
-let redisClient = redis.createClient();
+let client = redis.createClient();
+
+router.get('/open', (req, res, next) => {
+    
+})
 
 router.get('/:gameid', function(req, res, next) {
     let playerID = req.cookies['playerID'];

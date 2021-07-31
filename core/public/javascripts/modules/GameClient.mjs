@@ -35,7 +35,7 @@ class GameClient {
 
         console.log(packet);
 
-        if (packet.type === "chat") {
+        if (packet.type === "chat" || packet.type === "server") {
             this.readChat(packet)
         }
 
@@ -43,7 +43,7 @@ class GameClient {
             for (let subPacket of packet.messages) {
                 subPacket = JSON.parse(subPacket);
                 console.log(subPacket);
-                if (subPacket.type === "chat") {
+                if (subPacket.type === "chat" || subPacket.type === "server") {
                     this.readChat(subPacket);
                 } else if (subPacket.type === "move") {
                     // Need to wait until the game is initialized before re-adding moves to board from history.
@@ -66,10 +66,30 @@ class GameClient {
 
     readChat(packet) {
         console.log(packet.message);
-        let newMessage = document.createElement('p');
-        newMessage.classList.add('message')
-        newMessage.textContent = packet.message;
-        chatDisplay.append(newMessage);
+        let block = document.createElement('div');
+        let name = document.createElement('p');
+        let messageBody = document.createElement('p');
+
+        name.textContent = packet.author;
+        messageBody.textContent = packet.message;
+
+        if (packet.author === this.name) {
+            block.classList.add('message--send');
+        } else {
+            block.classList.add('message--receive');
+        }
+
+        if (packet.author === "Server") {
+            block.classList.add('message--server');
+        }
+
+        block.classList.add('message');
+        name.classList.add('message__name');
+        messageBody.classList.add('message__body');
+
+        block.append(name);
+        block.append(messageBody);
+        chatDisplay.append(block);
     }
 
     readMove(packet) {
@@ -86,6 +106,10 @@ class GameClient {
         }
 
         switch (type) {
+            case "server":
+                packet["author"] = "Server";
+                packet["message"] = message;
+
             case "chat":
                 packet["message"] = message;
                 break;
@@ -103,34 +127,7 @@ class GameClient {
             console.log("Waiting for game setup.");
         }
     }
-
-    // sendChat(message) {
-    //     let packet = {
-    //         "type": "chat",
-    //         "author": this.name,
-    //         "room": this.room,
-    //         "message": message,
-    //         "timestamp": new Date()
-    //     };
-
-    //     this.ws.send(JSON.stringify(packet));
-    // }
-
-    // sendState(message) {
-    //     let packet = {
-    //         "type": "state",
-    //         "room": this.room,
-    //         "message": message,
-    //         "timestamp": new Date()
-    //     }
-    // }
-
-    // getName() {
-    //     let storedName = localStorage.getItem('name');
-    //     if (storedName) {
-    //         this.name = storedName;
-    //     }
-    // }
+    
 }
 
 export default GameClient;
