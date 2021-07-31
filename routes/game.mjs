@@ -4,7 +4,7 @@ import * as uuid from 'uuid';
 import redis from 'redis';
 
 let router = express.Router();
-let client = redis.createClient();
+let client = redis.createClient(process.env.REDIS_URL);
 
 router.get('/open', (req, res, next) => {
     

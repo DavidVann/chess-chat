@@ -31,8 +31,8 @@ class GameServer {
         });
 
         // this.games = {}; // Object for storing game rooms
-        this.publisher = redis.createClient();
-        this.connection = redis.createClient();
+        this.publisher = redis.createClient(process.env.REDIS_URL);
+        this.connection = redis.createClient(process.env.REDIS_URL);
         this.subscribers = [];
 
     }
@@ -102,7 +102,7 @@ class GameServer {
         });
 
         // Subscribe to room updates
-        let subscriber = redis.createClient();
+        let subscriber = redis.createClient(process.env.REDIS_URL);
         subscriber.on("message", (channel, message) => {
             ws.send(message)
         })
