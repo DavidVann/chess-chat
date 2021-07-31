@@ -1,1 +1,1 @@
-web: cd core && npm start
+web: npm start
