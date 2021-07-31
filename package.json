@@ -1,5 +1,27 @@
 {
-    "scripts": {
-        "postinstall": "cd core && npm install"
-    }
+  "name": "core",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www.mjs",
+    "devstart": "nodemon ./bin/www.mjs",
+    "serverstart": "DEBUG=core:* npm run devstart"
+  },
+  "dependencies": {
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "http-errors": "~1.6.3",
+    "morgan": "~1.9.1",
+    "pug": "^3.0.2",
+    "redis": "^3.1.2",
+    "uuid": "^8.3.2",
+    "ws": "^7.5.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  },
+  "engines": {
+    "node": "16.x"
+  }
 }
